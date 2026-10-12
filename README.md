@@ -8,4 +8,9 @@ nmap -oX scan.xml target
 hx-parse nmap scan.xml -o report.md --json
 ```
 
-MIT — HackerX Official
+HackerX License
+
+## License
+
+Licensed under the [HackerX License](./LICENSE). Redistributions must retain copyright,
+license text, and [NOTICE](./NOTICE) attribution per the license terms.

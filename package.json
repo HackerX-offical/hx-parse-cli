@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": ">=20"
   },
