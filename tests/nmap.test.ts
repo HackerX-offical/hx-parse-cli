@@ -1,28 +1,30 @@
-import { writeFileSync, unlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseNmapXml } from '../src/nmap.js';
+import { parseNmapXml, ingestNmapXml, toMarkdown } from '../src/nmap.js';
 
-const sample = `<?xml version="1.0"?>
-<nmaprun>
-  <host>
-    <address addr="10.0.0.1" addrtype="ipv4"/>
-    <hostnames><hostname name="test.local"/></hostnames>
-    <ports>
-      <port protocol="tcp" portid="443">
-        <state state="open"/>
-        <service name="https" product="nginx"/>
-      </port>
-    </ports>
-  </host>
-</nmaprun>`;
+const fixture = join(import.meta.dirname, 'fixtures', 'sample-nmap.xml');
 
-describe('parseNmapXml', () => {
-  it('parses open port', () => {
-    const p = join(tmpdir(), `hx-nmap-${Date.now()}.xml`);
-    writeFileSync(p, sample);
-    const h = parseNmapXml(p);
-    expect(h[0].ports[0].port).toBe(443);
-    unlinkSync(p);
+describe('parseNmapXml integration', () => {
+  it('parses fixture open ports and risk tags', () => {
+    const hosts = parseNmapXml(fixture);
+    expect(hosts).toHaveLength(2);
+
+    const app = hosts.find((h) => h.ip === '10.0.0.1');
+    expect(app?.hostnames).toContain('app.internal');
+    expect(app?.ports.map((p) => p.port).sort()).toEqual([22, 443]);
+
+    const legacy = hosts.find((h) => h.ip === '10.0.0.50');
+    const telnet = legacy?.ports.find((p) => p.port === 23);
+    expect(telnet?.riskTags).toContain('telnet');
+  });
+
+  it('ingest attaches meta', () => {
+    const result = ingestNmapXml(fixture);
+    expect(result.meta.hostCount).toBe(2);
+    expect(result.meta.openPortCount).toBe(5);
+  });
+
+  it('toMarkdown remains available from barrel', () => {
+    const md = toMarkdown(parseNmapXml(fixture));
+    expect(md).toContain('10.0.0.1');
   });
 });

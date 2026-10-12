@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nmaprun scanner="nmap" args="nmap -sV -oX sample.xml" start="1700000000">
+  <host>
+    <status state="up" reason="echo-reply"/>
+    <address addr="10.0.0.1" addrtype="ipv4"/>
+    <hostnames>
+      <hostname name="app.internal" type="PTR"/>
+      <hostname name="app" type="user"/>
+    </hostnames>
+    <ports>
+      <port protocol="tcp" portid="22">
+        <state state="open"/>
+        <service name="ssh" product="OpenSSH" version="9.2"/>
+      </port>
+      <port protocol="tcp" portid="80">
+        <state state="closed"/>
+        <service name="http"/>
+      </port>
+      <port protocol="tcp" portid="443">
+        <state state="open"/>
+        <service name="https" product="nginx" version="1.24"/>
+      </port>
+    </ports>
+  </host>
+  <host>
+    <status state="up" reason="syn-ack"/>
+    <address addr="10.0.0.50" addrtype="ipv4"/>
+    <address addr="fe80::1" addrtype="ipv6"/>
+    <hostnames/>
+    <ports>
+      <port protocol="tcp" portid="23">
+        <state state="open"/>
+        <service name="telnet"/>
+      </port>
+      <port protocol="tcp" portid="445">
+        <state state="open"/>
+        <service name="microsoft-ds" product="Samba"/>
+      </port>
+      <port protocol="tcp" portid="3389">
+        <state state="open"/>
+        <service name="ms-wbt-server"/>
+      </port>
+    </ports>
+  </host>
+</nmaprun>
