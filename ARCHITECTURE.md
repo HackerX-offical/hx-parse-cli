@@ -1,73 +1,55 @@
-# hx-parse-cli architecture
+# hx-parse-cli — architecture
 
-Nmap XML ingest → normalized engagement structures and Markdown, JSON, or CSV reports.
+## Purpose
 
-## Layout
+Reads Nmap XML scan output from disk, parses hosts, addresses, ports, and service
+metadata, then formats results as Markdown, JSON, or CSV for downstream engagement
+tooling. Non-goals: running Nmap/Masscan, live scanning, or diffing multiple scans (see
+hx-api-diff / hx-graph).
 
-```
-src/
-  cli.ts                 # Commander entry (`hx-parse nmap <xml>`)
-  engagement.ts          # Meta envelope (host/open-port counts, timestamps)
-  nmap.ts                # Stable re-export barrel for tests and imports
-  nmap/
-    index.ts             # ingestNmapXml / parseNmapXml orchestration
-    types.ts             # HostFinding, PortFinding, NmapIngestResult
-    xml-parser.ts        # Read file + fast-xml-parser
-    host-extractor.ts    # Raw <host> nodes → IP, hostnames, port list
-    port-normalizer.ts   # XML port nodes → PortFinding (open-only default)
-    risk-tags.ts         # Port/service heuristics → riskTags[]
-    reporters/
-      markdown.ts
-      json.ts
-      csv.ts
-      index.ts
-tests/
-  fixtures/sample-nmap.xml
-  *.test.ts              # Unit tests per module + integration
+## High-level flow
+
+```mermaid
+flowchart LR
+  CLI[cli.ts] --> Ingest[nmap/index ingestNmapXml]
+  Ingest --> XML[xml-parser.ts]
+  Ingest --> Host[host-extractor.ts]
+  Ingest --> Ports[port-normalizer.ts]
+  Ingest --> Risk[risk-tags.ts]
+  CLI --> Format[formatNmapIngest]
+  Format --> Reporters[nmap/reporters/*]
 ```
 
-## Ingest pipeline
+## Module map
 
-1. **xml-parser** — `loadNmapDocument(path)` reads UTF-8 and parses with
-   `fast-xml-parser` (`@_` attribute prefix).
-2. **host-extractor** — `extractRawHosts` normalizes single/multiple `<host>`;
-   `extractIp` prefers `ipv4` when several `<address>` entries exist.
-3. **port-normalizer** — Maps each `<port>` to `PortFinding`; default export filters to
-   `state === 'open'`.
-4. **risk-tags** — Adds engagement hints (`cleartext-legacy`, `smb`, `rdp`,
-   `expected-edge`, etc.) from port number and service name.
-5. **engagement** — `buildNmapIngestResult` attaches `meta` (`scanner`, `generatedAt`,
-   counts).
-6. **reporters** — `formatNmapIngest(result, 'markdown' | 'json' | 'csv')` for CLI and
-   automation.
+| Path                             | Responsibility                                      |
+| -------------------------------- | --------------------------------------------------- |
+| `src/cli.ts`                     | `nmap` command, format flags, stdout and `-o` write |
+| `src/nmap.ts`                    | Legacy/barrel re-exports                            |
+| `src/engagement.ts`              | Engagement document helpers                         |
+| `src/nmap/index.ts`              | `ingestNmapXml`, `formatNmapIngest` public API      |
+| `src/nmap/xml-parser.ts`         | `fast-xml-parser` Nmap XML → raw structure          |
+| `src/nmap/host-extractor.ts`     | Host records from parsed XML                        |
+| `src/nmap/port-normalizer.ts`    | Port state and service normalization                |
+| `src/nmap/risk-tags.ts`          | Heuristic tags for common exposed services          |
+| `src/nmap/types.ts`              | Ingest result types                                 |
+| `src/nmap/reporters/index.ts`    | Format dispatcher                                   |
+| `src/nmap/reporters/markdown.ts` | Markdown report                                     |
+| `src/nmap/reporters/json.ts`     | JSON report                                         |
+| `src/nmap/reporters/csv.ts`      | CSV report                                          |
 
-## CLI
+## Extension
 
-```bash
-nmap -oX scan.xml target
-hx-parse nmap scan.xml              # Markdown to stdout
-hx-parse nmap scan.xml --json
-hx-parse nmap scan.xml --csv -o ports.csv
-```
+1. Extend `port-normalizer.ts` or `risk-tags.ts` for new service fingerprints.
+2. Add a reporter under `nmap/reporters/` and wire `formatNmapIngest`.
+3. Unit-test with fixture XML files under tests — no live scans.
+4. Run `npm test` and `npm run format:check`.
 
-## Develop
+## Testing strategy
 
-```bash
-npm install
-npm run build
-npm test
-```
+- **Unit**: XML parser, host extraction, reporters, risk tags — fixture XML only.
+- **Integration**: none required.
 
-TypeScript compiles `src/` → `dist/` (`NodeNext` ESM). Jest uses `ts-jest` ESM preset;
-tests import `.js` extensions matching emitted modules.
+## Ethics & scope
 
-## Extension points
-
-- **Masscan** — Add `src/masscan/` with the same reporter + `engagement` envelope
-  pattern.
-- **Risk model** — Extend `risk-tags.ts` or replace with policy files without touching
-  XML parsing.
-- **hx-graph** — Consume `NmapIngestResult` JSON (`hosts` + `meta`) from `--json`
-  output.
-
-See [SECURITY.md](./SECURITY.md) for authorized use.
+Authorized engagements only. See [SECURITY.md](./SECURITY.md).
