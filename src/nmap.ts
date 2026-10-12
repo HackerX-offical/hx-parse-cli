@@ -59,7 +59,9 @@ export function toMarkdown(hosts: HostFinding[]): string {
     lines.push('| Port | Proto | Service | Product |');
     lines.push('| --- | --- | --- | --- |');
     for (const p of h.ports) {
-      lines.push(`| ${p.port} | ${p.protocol} | ${p.service ?? ''} | ${p.product ?? ''} ${p.version ?? ''} |`);
+      lines.push(
+        `| ${p.port} | ${p.protocol} | ${p.service ?? ''} | ${p.product ?? ''} ${p.version ?? ''} |`,
+      );
     }
     lines.push('');
   }

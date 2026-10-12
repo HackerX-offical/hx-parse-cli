@@ -3,10 +3,30 @@
   "version": "1.0.0",
   "description": "Nmap & Masscan scan ingest → normalized engagement JSON and Markdown reports",
   "type": "module",
-  "bin": { "hx-parse": "./dist/cli.js" },
-  "scripts": { "build": "tsc", "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js" },
+  "bin": {
+    "hx-parse": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "license": "MIT",
-  "engines": { "node": ">=20" },
-  "dependencies": { "chalk": "^5.4.1", "commander": "^14.0.3", "fast-xml-parser": "^5.2.5" },
-  "devDependencies": { "@types/jest": "^30.0.0", "@types/node": "^22.10.0", "jest": "^30.2.0", "ts-jest": "^29.4.6", "typescript": "^5.9.3" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.3",
+    "fast-xml-parser": "^5.2.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
+  }
 }

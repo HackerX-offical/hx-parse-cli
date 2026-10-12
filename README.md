@@ -1,6 +1,7 @@
 # hx-parse-cli
 
-Ingest **Nmap XML** (and future Masscan) into engagement-ready **JSON + Markdown** for reports and `hx-graph merge`.
+Ingest **Nmap XML** (and future Masscan) into engagement-ready **JSON + Markdown** for
+reports and `hx-graph merge`.
 
 ```bash
 nmap -oX scan.xml target
