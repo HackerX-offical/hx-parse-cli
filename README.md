@@ -20,7 +20,7 @@ scan data from authorized assessments.
 ## Install
 
 ```bash
-git clone https://github.com/HackerX-offical/hx-parse-cli.git
+git clone https://github.com/HackerX-official/hx-parse-cli.git
 cd hx-parse-cli
 npm install
 npm run build
